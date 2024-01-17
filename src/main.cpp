@@ -43,17 +43,36 @@ int main() {
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);  
 
+    // float vertices[] = {
+    //     -0.5f, -0.5f, 0.0f,
+    //     0.5f, -0.5f, 0.0f,
+    //     0.0f, 0.5f, 0.0f
+    // };
+
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.0f, 0.5f, 0.0f
+        0.5f,  0.5f, 0.0f, // top right
+        0.5f, -0.5f, 0.0f, // bottom right
+       -0.5f, -0.5f, 0.0f, // bottom left
+       -0.5f,  0.5f, 0.0f  // top left
     };
 
+    unsigned int indices[] = { // note that we start from 0!
+       0, 1, 3, // first triangle
+       1, 2, 3  // second triangle
+    };
+
+    ///////////////// VERTEX BUFFER OBJECT ///////////////////
     unsigned int VBO;
     glGenBuffers(1, &VBO);  
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    ///////////////// ELEMENT BUFFER OBJECT ///////////////////
+    unsigned int EBO;
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     ////////////////////// VERTEX SHAER //////////////////////
     unsigned int vertexShader;
@@ -113,20 +132,41 @@ int main() {
     ///////////// VERTEX ATTRIBUTE OBJECT /////////////
     unsigned int VAO;
     glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-    // 2. copy our vertices array in a buffer for OpenGL to use
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    // 3. then set our vertex attributes pointers
+
+    // glBindVertexArray(VAO);
+
+
+    // // 2. copy our vertices array in a buffer for OpenGL to use
+    // glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    // // 3. then set our vertex attributes pointers
+    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    // glEnableVertexAttribArray(0);
+
+
+    // ..:: Initialization code :: ..
+   // 1. bind Vertex Array Object
+   glBindVertexArray(VAO);
+   // 2. copy our vertices array in a vertex buffer for OpenGL to use
+   glBindBuffer(GL_ARRAY_BUFFER, VBO);
+   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+   // 3. copy our index array in a element buffer for OpenGL to use
+   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+                GL_STATIC_DRAW);
+   // 4. then set the vertex attributes pointers
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // FILL or LINES
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        // glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
         glfwSwapBuffers(window);
         glClear(GL_COLOR_BUFFER_BIT);
     }
